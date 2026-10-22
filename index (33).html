@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f2a43">
+<meta name="google" content="notranslate">
+<title>ISL · HUB H&S</title>
+<style>
+  :root{
+    --bg:#f3f5f8; --surface:#ffffff; --ink:#14212e; --muted:#5b6b7b;
+    --brand:#0f2a43; --accent:#e8710a; --line:#dde3ea;
+    --c-ext:#c62828; --c-epp:#1565c0; --c-insp:#2e7d32;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0c141d; --surface:#15212e; --ink:#e8eef4; --muted:#93a4b5; --line:#24354a; }
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--ink); min-height:100vh;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  header{
+    background:var(--brand); color:#fff;
+    padding:calc(22px + env(safe-area-inset-top)) 20px 28px;
+    border-bottom:4px solid var(--accent);
+  }
+  .wrap{max-width:960px;margin:0 auto}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.75;font-weight:600}
+  h1{font-size:26px;line-height:1.15;margin-top:6px;font-weight:750}
+  header p{margin-top:8px;font-size:14px;opacity:.85;max-width:52ch}
+  main{padding:22px 16px 40px}
+  .grid{display:grid;gap:14px;grid-template-columns:1fr}
+  @media(min-width:640px){.grid{grid-template-columns:repeat(2,1fr)}}
+  @media(min-width:900px){.grid{grid-template-columns:repeat(3,1fr)}}
+  .card{
+    display:flex;flex-direction:column;gap:10px;
+    background:var(--surface); border:1px solid var(--line);
+    border-top:5px solid var(--c);
+    border-radius:14px; padding:18px; text-decoration:none; color:inherit;
+    min-height:170px; transition:transform .12s ease, box-shadow .12s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+  a.card:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(15,42,67,.14)}
+  a.card:active{transform:scale(.985)}
+  a.card:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+  .icon{
+    width:48px;height:48px;border-radius:12px;display:grid;place-items:center;
+    background:color-mix(in srgb,var(--c) 14%,transparent); color:var(--c);
+  }
+  .icon svg{width:28px;height:28px}
+  .card h2{font-size:18px;font-weight:700}
+  .card p{font-size:14px;color:var(--muted);line-height:1.4;flex:1}
+  .go{font-size:13px;font-weight:700;color:var(--c);display:flex;align-items:center;gap:6px}
+  .card.off{opacity:.55;border-top-color:var(--line);cursor:not-allowed}
+  .card.off .go{color:var(--muted)}
+  .card.off .icon{background:var(--bg);color:var(--muted)}
+  .badge{
+    align-self:flex-start;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    background:var(--bg);color:var(--muted);border:1px solid var(--line);padding:3px 8px;border-radius:99px;
+  }
+  .card.soon{border-style:dashed;border-top-style:solid;background:transparent}
+  footer{max-width:960px;margin:0 auto;padding:0 20px 28px;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">Instrumental San Lorenzo S.R.L.</div>
+    <h1>HUB Higiene y Seguridad</h1>
+    <p>Accesos a las herramientas del área de H&amp;S. Elegí una pantalla para empezar.</p>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <div class="grid" id="grid" aria-live="polite"></div>
+  </div>
+</main>
+
+<footer><div class="wrap">ISL · Uso interno</div></footer>
+
+<script>
+/* ============================================================
+   CONFIGURACIÓN DEL HUB
+   Para agregar una pantalla nueva: sumar un objeto a MODULOS.
+   - url vacía ("") => la tarjeta se muestra deshabilitada ("Próximamente")
+   - icon: nombre de un ícono definido en ICONOS (abajo)
+   ============================================================ */
+const MODULOS = [
+  {
+    id: "extintores",
+    titulo: "Gestión de Extintores",
+    desc: "Inventario, inspecciones periódicas y vencimientos de extintores (planilla R-15.10).",
+    url: "https://mauricioemaldonado-cyber.github.io/isl-extintores/",
+    color: "#c62828",
+    icon: "fuego"
+  },
+  {
+    id: "epp",
+    titulo: "Gestión de EPP",
+    desc: "Compras, envíos a obra y entregas de EPP al personal (Res. SRT 299/11).",
+    url: "https://mauricioemaldonado-cyber.github.io/isl-epp/",
+    color: "#1565c0",
+    icon: "casco"
+  },
+  {
+    id: "inspeccion",
+    titulo: "Inspección de Equipos",
+    desc: "Inspección y control de equipos y elementos de trabajo.",
+    url: "https://mauricioemaldonado-cyber.github.io/isl-herramientas/hys.html",
+    color: "#2e7d32",
+    icon: "check"
+  }
+];
+
+const ICONOS = {
+  fuego: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c1 3.5 5 5.5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 .3 1.2 1 2 2 2 0-3-1-5 1-8z"/></svg>',
+  casco: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17h18"/><path d="M5 17a7 7 0 0 1 14 0"/><path d="M12 6v5"/><path d="M9 7.5V11M15 7.5V11" /></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="m8.5 12 2.5 2.5L16 9.5"/></svg>',
+  flecha: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>'
+};
+
+const grid = document.getElementById("grid");
+
+MODULOS.forEach(m => {
+  const activo = !!m.url;
+  const el = document.createElement(activo ? "a" : "div");
+  el.className = "card" + (activo ? "" : " off");
+  el.style.setProperty("--c", m.color);
+  if (activo) { el.href = m.url; }
+  else { el.setAttribute("aria-disabled", "true"); }
+  el.innerHTML =
+    '<div class="icon">' + (ICONOS[m.icon] || "") + '</div>' +
+    '<h2></h2><p></p>' +
+    (activo
+      ? '<div class="go">Abrir ' + ICONOS.flecha + '</div>'
+      : '<span class="badge">Próximamente</span>');
+  el.querySelector("h2").textContent = m.titulo;
+  el.querySelector("p").textContent = m.desc;
+  grid.appendChild(el);
+});
+
+/* Tarjeta de "más pantallas por venir" */
+const soon = document.createElement("div");
+soon.className = "card off soon";
+soon.innerHTML = '<div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div><h2>Más pantallas</h2><p>Este HUB se va a ir ampliando a medida que se sumen nuevas herramientas.</p>';
+grid.appendChild(soon);
+</script>
+</body>
+</html>
