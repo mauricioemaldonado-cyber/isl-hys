@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="es" translate="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="google" content="notranslate">
+<meta name="theme-color" content="#0f2a43">
+<title>ISL · Consulta de Izaje</title>
+<style>
+  :root{
+    --bg:#f3f5f8; --surface:#fff; --ink:#14212e; --muted:#5b6b7b; --line:#dde3ea;
+    --brand:#0f2a43; --accent:#e8710a;
+    --ok:#2e7d32; --ok-bg:#e3f1e5; --warn:#b9720f; --warn-bg:#fbedd8; --danger:#b23a2e; --danger-bg:#fbe4e1;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0c141d; --surface:#15212e; --ink:#e8eef4; --muted:#93a4b5; --line:#24354a;
+      --ok-bg:#16301b; --warn-bg:#35280f; --danger-bg:#3a1a16; --ok:#6fcf7a; --warn:#f0b04d; --danger:#ff8a7d; }
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;padding-bottom:env(safe-area-inset-bottom)}
+  header{background:var(--brand);color:#fff;padding:calc(16px + env(safe-area-inset-top)) 16px 18px;border-bottom:4px solid var(--accent)}
+  .wrap{max-width:1000px;margin:0 auto}
+  .back{color:#cbd6e3;font-size:13px;text-decoration:none;display:inline-block;margin-bottom:8px}
+  h1{font-size:22px;font-weight:750;line-height:1.15}
+  header p{font-size:13px;opacity:.8;margin-top:4px}
+  main{padding:16px 14px 40px}
+  .controls{display:grid;gap:10px;margin-bottom:14px}
+  @media(min-width:640px){.controls{grid-template-columns:2fr 1.4fr auto}}
+  select,input[type=search]{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-size:15px}
+  .btn{padding:12px 16px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-size:14px;font-weight:600;cursor:pointer}
+  .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+  .chip{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 6px;text-align:center;cursor:pointer;color:var(--ink)}
+  .chip b{display:block;font-size:22px;font-variant-numeric:tabular-nums}
+  .chip span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .chip.on{outline:3px solid var(--accent)}
+  .chip.ok b{color:var(--ok)} .chip.warn b{color:var(--warn)} .chip.danger b{color:var(--danger)}
+  .list{display:grid;gap:10px}
+  @media(min-width:760px){.list{grid-template-columns:1fr 1fr}}
+  .item{background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--c);border-radius:12px;padding:13px 14px}
+  .item.ok{--c:var(--ok)} .item.warn{--c:var(--warn)} .item.danger{--c:var(--danger)}
+  .top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+  .id{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;font-size:13px;color:var(--muted)}
+  .badge{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:3px 9px;border-radius:99px;white-space:nowrap}
+  .badge.ok{background:var(--ok-bg);color:var(--ok)} .badge.warn{background:var(--warn-bg);color:var(--warn)} .badge.danger{background:var(--danger-bg);color:var(--danger)}
+  .name{font-size:16px;font-weight:700;margin:6px 0 2px}
+  .sub{font-size:13px;color:var(--muted)}
+  dl{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;margin-top:9px;font-size:13px}
+  dt{color:var(--muted)} dd{font-weight:600}
+  .msg{background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:28px 16px;text-align:center;color:var(--muted);font-size:14px}
+  .msg.err{border-color:var(--danger);color:var(--danger)}
+  .count{font-size:12px;color:var(--muted);margin:2px 2px 10px}
+  footer{max-width:1000px;margin:0 auto;padding:0 16px 24px;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body class="notranslate" translate="no">
+<header><div class="wrap">
+  <a class="back" href="index.html">← HUB H&amp;S</a>
+  <h1>Elementos de Izaje</h1>
+  <p>Consulta de estado por obra · solo lectura</p>
+</div></header>
+
+<main><div class="wrap">
+  <div class="controls">
+    <select id="obra" aria-label="Obra"></select>
+    <input type="search" id="q" placeholder="Buscar código, tipo, descripción…" aria-label="Buscar">
+    <button class="btn" id="refresh">Actualizar</button>
+  </div>
+  <div class="summary" id="summary"></div>
+  <div class="count" id="count"></div>
+  <div class="list" id="list"><div class="msg">Cargando datos…</div></div>
+</div></main>
+<footer><div class="wrap">ISL · Uso interno · Los datos se cargan y modifican desde el Gestor de Izaje.</div></footer>
+
+<script>
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby9WANpGZ5hPCPvu2il2_-ghX6h-sgpO4myG0cVIqIz4_Mn_A8h9Z_5fGa1AtlbwNE1xw/exec";
+const ALERT_DAYS = 30;
+
+let OBRAS = [], ELEMS = [];
+let fObra = "", fEstado = "", fTexto = "";
+
+/* ---------- utilidades de fecha (misma lógica que el gestor) ---------- */
+const p2 = n => String(n).padStart(2,"0");
+const toLocalISO = d => d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate());
+const isSD = v => typeof v==="string" && /^\s*s\s*\/?\s*d\s*$/i.test(v);
+function normDate(v){
+  if(v===undefined||v===null||v==="") return "";
+  if(typeof v==="number"){ const d=new Date(v); return isNaN(d)?"":toLocalISO(d); }
+  const s=String(v).trim();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  if(/^\d{4}-\d{2}-\d{2}T/.test(s)){ const d=new Date(s); return isNaN(d)?"":toLocalISO(d); }
+  const m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  return m ? m[3]+"-"+p2(m[2])+"-"+p2(m[1]) : "";
+}
+function addMonths(ds, months){
+  const b=normDate(ds); if(!b||!months) return null;
+  const d=new Date(b+"T00:00:00"); if(isNaN(d)) return null;
+  d.setMonth(d.getMonth()+Number(months));
+  return isNaN(d)?null:toLocalISO(d);
+}
+function vencimiento(e){
+  if(isSD(e.fecha_ultima_habilitacion)) return "S/D";
+  return addMonths(e.fecha_ultima_habilitacion, e.frecuencia_meses);
+}
+function estado(venc){
+  if(isSD(venc)) return {k:"danger",l:"Vencido",rank:0};
+  venc=normDate(venc);
+  if(!venc) return {k:"warn",l:"Sin dato",rank:1};
+  const diff=Math.round((new Date(venc+"T00:00:00")-new Date(toLocalISO(new Date())+"T00:00:00"))/86400000);
+  if(diff<0) return {k:"danger",l:"Vencido",rank:0,diff};
+  if(diff<=ALERT_DAYS) return {k:"warn",l:"Por vencer",rank:1,diff};
+  return {k:"ok",l:"Vigente",rank:2,diff};
+}
+function fmtDate(s){ if(isSD(s)) return "S/D"; s=normDate(s); if(!s) return "—"; const [y,m,d]=s.split("-"); return d+"/"+m+"/"+y; }
+const esc = t => String(t??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ---------- datos (solo GET) ---------- */
+async function getSheet(name){
+  const r = await fetch(APPS_SCRIPT_URL+"?sheet="+encodeURIComponent(name));
+  const j = await r.json();
+  if(j.error) throw new Error(j.error);
+  const rows = j.values||[];
+  if(rows.length<2) return [];
+  const h = rows[0];
+  return rows.slice(1).filter(r=>r.some(c=>c!==undefined&&c!=="")).map(r=>{
+    const o={}; h.forEach((k,i)=>o[k]=r[i]!==undefined?r[i]:""); return o;
+  });
+}
+function resolveUbic(v){
+  const t=String(v??"").trim(); if(!t) return "";
+  if(t==="ALMACEN") return t;
+  const low=t.toLowerCase();
+  if(["almacén isl","almacen isl","almacén","almacen","depósito isl","deposito isl","depósito","deposito"].includes(low)) return "ALMACEN";
+  const o=OBRAS.find(x=>String(x.id).toLowerCase()===low||String(x.nombre_obra).trim().toLowerCase()===low);
+  return o?o.id:t;
+}
+function obraLabel(id){
+  if(!id) return "Sin ubicación";
+  if(id==="ALMACEN") return "Almacén ISL";
+  const o=OBRAS.find(x=>x.id===id);
+  return o ? o.nombre_obra : id;
+}
+
+async function cargar(){
+  const list=document.getElementById("list");
+  list.innerHTML='<div class="msg">Cargando datos…</div>';
+  try{
+    [OBRAS, ELEMS] = await Promise.all([getSheet("Obras"), getSheet("Elementos_Izaje")]);
+    ELEMS.forEach(e=>{ e.ubicacion=resolveUbic(e.ubicacion); e._venc=vencimiento(e); e._est=estado(e._venc); });
+    armarSelect(); render();
+  }catch(err){
+    list.innerHTML='<div class="msg err">No se pudo conectar con la planilla.<br>'+esc(err.message)+'<br><br>Revisá la conexión y tocá “Actualizar”.</div>';
+    document.getElementById("summary").innerHTML=""; document.getElementById("count").textContent="";
+  }
+}
+
+function armarSelect(){
+  const sel=document.getElementById("obra");
+  let guardada=""; try{ guardada=localStorage.getItem("isl_izaje_obra")||""; }catch(e){}
+  const opts=['<option value="">Todas las obras</option>'];
+  OBRAS.forEach(o=>opts.push('<option value="'+esc(o.id)+'">'+esc(o.nombre_obra)+(o.oc_cliente?" · OC "+esc(o.oc_cliente):"")+'</option>'));
+  opts.push('<option value="ALMACEN">Almacén ISL</option>');
+  sel.innerHTML=opts.join("");
+  const valida=[...sel.options].some(o=>o.value===guardada);
+  fObra = valida ? guardada : "";
+  sel.value=fObra;
+}
+
+function render(){
+  const base = ELEMS.filter(e=>!fObra || e.ubicacion===fObra);
+  const cnt={ok:0,warn:0,danger:0};
+  base.forEach(e=>cnt[e._est.k]++);
+
+  const chips=[["","Todos",base.length,""],["ok","Vigentes",cnt.ok,"ok"],["warn","Por vencer",cnt.warn,"warn"],["danger","Vencidos",cnt.danger,"danger"]];
+  document.getElementById("summary").innerHTML = chips.map(c=>
+    '<button class="chip '+c[3]+(fEstado===c[0]?" on":"")+'" data-e="'+c[0]+'"><b>'+c[2]+'</b><span>'+c[1]+'</span></button>').join("");
+  document.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{ fEstado=b.dataset.e; render(); });
+
+  const q=fTexto.trim().toLowerCase();
+  let rows = base.filter(e=>(!fEstado||e._est.k===fEstado) &&
+    (!q || [e.id,e.tipo,e.descripcion,e.marca,e.modelo,e.n_certificado].join(" ").toLowerCase().includes(q)));
+  rows.sort((a,b)=> a._est.rank-b._est.rank || String(a._venc==="S/D"?"0":a._venc||"9").localeCompare(String(b._venc==="S/D"?"0":b._venc||"9")));
+
+  document.getElementById("count").textContent = rows.length+" elemento"+(rows.length===1?"":"s")+(fObra?" en "+obraLabel(fObra):"");
+  const list=document.getElementById("list");
+  if(!rows.length){ list.innerHTML='<div class="msg">No hay elementos para este filtro.</div>'; return; }
+  list.innerHTML = rows.map(e=>{
+    const mm=[e.marca,e.modelo].filter(Boolean).join(" / ");
+    let extra="";
+    if(e._est.diff!==undefined){
+      extra = e._est.diff<0 ? " (hace "+Math.abs(e._est.diff)+" d)" : " (en "+e._est.diff+" d)";
+    }
+    return '<div class="item '+e._est.k+'">'+
+      '<div class="top"><span class="id">'+esc(e.id)+'</span><span class="badge '+e._est.k+'">'+e._est.l+'</span></div>'+
+      '<div class="name">'+esc(e.tipo||"Elemento")+(e.descripcion?" · "+esc(e.descripcion):"")+'</div>'+
+      '<div class="sub">'+esc(mm||"—")+(e.capacidad!==""&&e.capacidad!==undefined?" · "+esc(e.capacidad)+" TN":"")+'</div>'+
+      '<dl>'+
+        '<dt>Vence</dt><dd>'+fmtDate(e._venc)+esc(extra)+'</dd>'+
+        '<dt>Habilitado</dt><dd>'+fmtDate(e.fecha_ultima_habilitacion)+'</dd>'+
+        '<dt>Certificado</dt><dd>'+esc(e.n_certificado||"—")+'</dd>'+
+        '<dt>Ubicación</dt><dd>'+esc(obraLabel(e.ubicacion))+'</dd>'+
+      '</dl></div>';
+  }).join("");
+}
+
+document.getElementById("obra").onchange=e=>{ fObra=e.target.value; try{localStorage.setItem("isl_izaje_obra",fObra);}catch(_){} render(); };
+document.getElementById("q").oninput=e=>{ fTexto=e.target.value; render(); };
+document.getElementById("refresh").onclick=cargar;
+cargar();
+</script>
+</body>
+</html>
