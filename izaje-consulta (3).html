@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="es" translate="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="google" content="notranslate">
+<meta name="theme-color" content="#0f2a43">
+<title>ISL · Consulta de Izaje</title>
+<style>
+  :root{
+    --bg:#f3f5f8; --surface:#fff; --ink:#14212e; --muted:#5b6b7b; --line:#dde3ea;
+    --brand:#0f2a43; --accent:#e8710a;
+    --ok:#2e7d32; --ok-bg:#e3f1e5; --warn:#b9720f; --warn-bg:#fbedd8; --danger:#b23a2e; --danger-bg:#fbe4e1;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0c141d; --surface:#15212e; --ink:#e8eef4; --muted:#93a4b5; --line:#24354a;
+      --ok-bg:#16301b; --warn-bg:#35280f; --danger-bg:#3a1a16; --ok:#6fcf7a; --warn:#f0b04d; --danger:#ff8a7d; }
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;padding-bottom:env(safe-area-inset-bottom)}
+  header{background:var(--brand);color:#fff;padding:calc(16px + env(safe-area-inset-top)) 16px 0;border-bottom:4px solid var(--accent)}
+  .wrap{max-width:1000px;margin:0 auto}
+  .back{color:#cbd6e3;font-size:13px;text-decoration:none;display:inline-block;margin-bottom:8px}
+  h1{font-size:22px;font-weight:750;line-height:1.15}
+  header p{font-size:13px;opacity:.8;margin-top:4px;margin-bottom:12px}
+  .tabs{display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .tab{flex:1 1 auto;white-space:nowrap;padding:11px 14px;border:none;background:rgba(255,255,255,.08);color:#cbd6e3;font-size:14px;font-weight:600;border-radius:10px 10px 0 0;cursor:pointer}
+  .tab.on{background:var(--bg);color:var(--brand)}
+  @media (prefers-color-scheme: dark){ .tab.on{color:var(--ink)} }
+  main{padding:16px 14px 40px}
+  .controls{display:grid;gap:10px;margin-bottom:10px;grid-template-columns:1fr auto}
+  .filters{display:grid;gap:10px;grid-template-columns:1fr 1fr;margin-bottom:14px}
+  @media(min-width:760px){.filters{grid-template-columns:repeat(3,1fr)}}
+  .f label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+  .f.wide{grid-column:1/-1}
+  @media(min-width:760px){.f.wide{grid-column:auto}}
+  .f.chk{display:flex;align-items:flex-end}
+  .f.chk label{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;text-transform:none;letter-spacing:0;color:var(--ink);margin:0;padding:12px 0}
+  .f.chk input{width:20px;height:20px}
+  select,input[type=search]{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-size:15px}
+  .btn{padding:12px 16px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font-size:14px;font-weight:600;cursor:pointer}
+  .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+  .chip{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 6px;text-align:center;cursor:pointer;color:var(--ink)}
+  .chip b{display:block;font-size:22px;font-variant-numeric:tabular-nums}
+  .chip span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .chip.on{outline:3px solid var(--accent)}
+  .chip.ok b{color:var(--ok)} .chip.warn b{color:var(--warn)} .chip.danger b{color:var(--danger)}
+  .list{display:grid;gap:10px}
+  @media(min-width:760px){.list{grid-template-columns:1fr 1fr}}
+  .item{background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--c);border-radius:12px;padding:13px 14px}
+  .item.ok{--c:var(--ok)} .item.warn{--c:var(--warn)} .item.danger{--c:var(--danger)}
+  .top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+  .id{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;font-size:13px;color:var(--muted)}
+  .badge{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:3px 9px;border-radius:99px;white-space:nowrap}
+  .badge.ok{background:var(--ok-bg);color:var(--ok)} .badge.warn{background:var(--warn-bg);color:var(--warn)} .badge.danger{background:var(--danger-bg);color:var(--danger)}
+  .name{font-size:16px;font-weight:700;margin:6px 0 2px}
+  .sub{font-size:13px;color:var(--muted)}
+  dl{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;margin-top:9px;font-size:13px}
+  dt{color:var(--muted)} dd{font-weight:600}
+  .msg{background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:28px 16px;text-align:center;color:var(--muted);font-size:14px}
+  .msg.err{border-color:var(--danger);color:var(--danger)}
+  .count{font-size:12px;color:var(--muted);margin:2px 2px 10px}
+  footer{max-width:1000px;margin:0 auto;padding:0 16px 24px;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body class="notranslate" translate="no">
+<header><div class="wrap">
+  <a class="back" href="index.html">← HUB H&amp;S</a>
+  <h1>Consulta de Izaje</h1>
+  <p>Estado de elementos, certificaciones y operadores · solo lectura</p>
+  <div class="tabs" id="tabs"></div>
+</div></header>
+
+<main><div class="wrap">
+  <div class="controls">
+    <input type="search" id="q" aria-label="Buscar">
+    <button class="btn" id="refresh">Actualizar</button>
+  </div>
+  <div class="filters" id="filters"></div>
+  <div class="summary" id="summary"></div>
+  <div class="count" id="count"></div>
+  <div class="list" id="list"><div class="msg">Cargando datos…</div></div>
+</div></main>
+<footer><div class="wrap">ISL · Uso interno · Los datos se cargan y modifican desde el Gestor de Izaje.</div></footer>
+
+<script>
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby9WANpGZ5hPCPvu2il2_-ghX6h-sgpO4myG0cVIqIz4_Mn_A8h9Z_5fGa1AtlbwNE1xw/exec";
+const ALERT_DAYS = 30;
+
+let OBRAS=[], ELEMS=[], CERTS=[], CHOF=[];
+let tab="elementos";
+const S = { elementos:{}, certificaciones:{}, choferes:{} };   // estado de filtros por pestaña
+
+/* ---------- fechas (misma lógica que el gestor) ---------- */
+const p2 = n => String(n).padStart(2,"0");
+const toLocalISO = d => d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate());
+const isSD = v => typeof v==="string" && /^\s*s\s*\/?\s*d\s*$/i.test(v);
+function normDate(v){
+  if(v===undefined||v===null||v==="") return "";
+  if(typeof v==="number"){ const d=new Date(v); return isNaN(d)?"":toLocalISO(d); }
+  const s=String(v).trim();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  if(/^\d{4}-\d{2}-\d{2}T/.test(s)){ const d=new Date(s); return isNaN(d)?"":toLocalISO(d); }
+  const m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  return m ? m[3]+"-"+p2(m[2])+"-"+p2(m[1]) : "";
+}
+function addMonths(ds, months){
+  const b=normDate(ds); if(!b||!months) return null;
+  const d=new Date(b+"T00:00:00"); if(isNaN(d)) return null;
+  d.setMonth(d.getMonth()+Number(months));
+  return isNaN(d)?null:toLocalISO(d);
+}
+function estado(venc){
+  if(isSD(venc)) return {k:"danger",l:"Vencido",rank:0};
+  venc=normDate(venc);
+  if(!venc) return {k:"warn",l:"Sin dato",rank:1};
+  const diff=Math.round((new Date(venc+"T00:00:00")-new Date(toLocalISO(new Date())+"T00:00:00"))/86400000);
+  if(diff<0) return {k:"danger",l:"Vencido",rank:0,diff};
+  if(diff<=ALERT_DAYS) return {k:"warn",l:"Por vencer",rank:1,diff};
+  return {k:"ok",l:"Vigente",rank:2,diff};
+}
+function fmtDate(s){ if(isSD(s)) return "S/D"; s=normDate(s); if(!s) return "—"; const [y,m,d]=s.split("-"); return d+"/"+m+"/"+y; }
+const esc = t => String(t??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const txt = v => String(v??"").trim();
+function diasTxt(e){ return e.diff===undefined ? "" : (e.diff<0 ? " (hace "+Math.abs(e.diff)+" d)" : " (en "+e.diff+" d)"); }
+
+/* ---------- datos (solo lectura, GET) ---------- */
+async function getSheet(name){
+  const r = await fetch(APPS_SCRIPT_URL+"?sheet="+encodeURIComponent(name));
+  const j = await r.json();
+  if(j.error) throw new Error(j.error);
+  const rows = j.values||[];
+  if(rows.length<2) return [];
+  const h = rows[0];
+  return rows.slice(1).filter(r=>r.some(c=>c!==undefined&&c!=="")).map(r=>{
+    const o={}; h.forEach((k,i)=>o[k]=r[i]!==undefined?r[i]:""); return o;
+  });
+}
+function resolveUbic(v){
+  const t=txt(v); if(!t) return "";
+  if(t==="ALMACEN") return t;
+  const low=t.toLowerCase();
+  if(["almacén isl","almacen isl","almacén","almacen","depósito isl","deposito isl","depósito","deposito"].includes(low)) return "ALMACEN";
+  const o=OBRAS.find(x=>txt(x.id).toLowerCase()===low||txt(x.nombre_obra).toLowerCase()===low);
+  return o?o.id:t;
+}
+function obraLabel(id){
+  if(!id) return "Sin ubicación";
+  if(id==="ALMACEN") return "Almacén ISL";
+  const o=OBRAS.find(x=>x.id===id);
+  return o ? o.nombre_obra : id;
+}
+
+async function cargar(){
+  const list=document.getElementById("list");
+  list.innerHTML='<div class="msg">Cargando datos…</div>';
+  try{
+    [OBRAS, ELEMS, CERTS, CHOF] = await Promise.all([
+      getSheet("Obras"), getSheet("Elementos_Izaje"),
+      getSheet("Certificaciones_Elementos"), getSheet("Choferes_Operadores")
+    ]);
+    ELEMS.forEach(e=>{
+      e.ubicacion=resolveUbic(e.ubicacion);
+      e._venc = isSD(e.fecha_ultima_habilitacion) ? "S/D" : addMonths(e.fecha_ultima_habilitacion, e.frecuencia_meses);
+      e._est = estado(e._venc);
+    });
+    const byId={}; ELEMS.forEach(e=>byId[txt(e.id)]=e);
+    const ultima={};
+    CERTS.forEach(c=>{
+      c._elem = byId[txt(c.elemento_id)] || null;
+      c._venc = isSD(c.fecha_habilitacion) ? "S/D" : addMonths(c.fecha_habilitacion, c.frecuencia_meses);
+      c._est = estado(c._venc);
+      const k=txt(c.elemento_id), f=normDate(c.fecha_habilitacion);
+      if(!ultima[k] || f>ultima[k]) ultima[k]=f;
+    });
+    CERTS.forEach(c=>{ c._latest = normDate(c.fecha_habilitacion)===ultima[txt(c.elemento_id)]; });
+    CHOF.forEach(c=>{
+      c._venc = isSD(c.fecha_vencimiento) ? "S/D" : (normDate(c.fecha_vencimiento)||null);
+      c._est = estado(c._venc);
+    });
+    try{ const g=localStorage.getItem("isl_izaje_obra")||""; if(g){ S.elementos.ubic=g; S.certificaciones.ubic=g; } }catch(e){}
+    renderTabs(); renderFilters(); render();
+  }catch(err){
+    list.innerHTML='<div class="msg err">No se pudo conectar con la planilla.<br>'+esc(err.message)+'<br><br>Revisá la conexión y tocá “Actualizar”.</div>';
+    ["summary","filters"].forEach(i=>document.getElementById(i).innerHTML="");
+    document.getElementById("count").textContent="";
+  }
+}
+
+/* ---------- definición de cada pestaña ---------- */
+const ubicOpts = () => [...OBRAS.map(o=>({v:o.id,l:o.nombre_obra+(o.oc_cliente?" · OC "+o.oc_cliente:"")})), {v:"ALMACEN",l:"Almacén ISL"}];
+const uniqOpts = (rows,get) => [...new Set(rows.map(r=>txt(get(r))).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"es")).map(v=>({v,l:v}));
+
+const TABS = {
+  elementos:{
+    label:"Elementos", ph:"Buscar código, tipo, descripción, certificado…",
+    rows:()=>ELEMS,
+    filters:[
+      {k:"ubic", l:"Ubicación (obra)", wide:true, get:r=>r.ubicacion, opts:ubicOpts, todos:"Todas las obras"},
+      {k:"tipo", l:"Elemento (tipo)", get:r=>r.tipo, opts:()=>uniqOpts(ELEMS,r=>r.tipo), todos:"Todos"},
+      {k:"marca", l:"Marca", get:r=>r.marca, opts:()=>uniqOpts(ELEMS,r=>r.marca), todos:"Todas"},
+      {k:"ente", l:"Ente certificador", get:r=>r.ente_certificador, opts:()=>uniqOpts(ELEMS,r=>r.ente_certificador), todos:"Todos"},
+    ],
+    search:r=>[r.id,r.tipo,r.descripcion,r.marca,r.modelo,r.n_certificado],
+    card:e=>{
+      const mm=[e.marca,e.modelo].filter(Boolean).join(" / ");
+      return item(e._est, e.id,
+        txt(e.tipo||"Elemento")+(e.descripcion?" · "+txt(e.descripcion):""),
+        (mm||"—")+(txt(e.capacidad)?" · "+txt(e.capacidad)+" TN":""),
+        [["Vence",fmtDate(e._venc)+diasTxt(e._est)],["Habilitado",fmtDate(e.fecha_ultima_habilitacion)],
+         ["Certificado",txt(e.n_certificado)||"—"],["Ubicación",obraLabel(e.ubicacion)]]);
+    }
+  },
+  certificaciones:{
+    label:"Certificaciones", ph:"Buscar elemento, empresa, N° de certificado…",
+    rows:()=>CERTS,
+    filters:[
+      {k:"ubic", l:"Ubicación del elemento (obra)", wide:true, get:r=>r._elem?r._elem.ubicacion:"", opts:ubicOpts, todos:"Todas las obras"},
+      {k:"elem", l:"Elemento", get:r=>r.elemento_id, opts:()=>uniqOpts(CERTS,r=>r.elemento_id), todos:"Todos"},
+      {k:"empresa", l:"Empresa certificadora", get:r=>r.empresa_certificadora, opts:()=>uniqOpts(CERTS,r=>r.empresa_certificadora), todos:"Todas"},
+    ],
+    extra:{k:"latest", l:"Solo la más reciente de cada elemento", test:r=>r._latest},
+    search:r=>[r.id,r.elemento_id,r._elem&&r._elem.tipo,r._elem&&r._elem.descripcion,r.empresa_certificadora,r.n_certificado],
+    card:c=>{
+      const el=c._elem;
+      return item(c._est, c.id,
+        txt(c.elemento_id)+(el?" · "+txt(el.tipo)+(el.descripcion?" · "+txt(el.descripcion):""):""),
+        c._latest?"Certificación más reciente":"Certificación anterior",
+        [["Habilitación",fmtDate(c.fecha_habilitacion)],["Vence",fmtDate(c._venc)+diasTxt(c._est)],
+         ["Frecuencia",txt(c.frecuencia_meses)?txt(c.frecuencia_meses)+" meses":"—"],
+         ["Empresa",txt(c.empresa_certificadora)||"—"],["N° certificado",txt(c.n_certificado)||"—"],
+         ["Ubicación",el?obraLabel(el.ubicacion):"—"]]);
+    }
+  },
+  choferes:{
+    label:"Choferes / Operadores", ph:"Buscar nombre o DNI…",
+    rows:()=>CHOF,
+    filters:[
+      {k:"carnet", l:"Tipo de carnet", get:r=>r.tipo_carnet, opts:()=>uniqOpts(CHOF,r=>r.tipo_carnet), todos:"Todos"},
+      {k:"entidad", l:"Entidad emisora", get:r=>r.entidad_emisora, opts:()=>uniqOpts(CHOF,r=>r.entidad_emisora), todos:"Todas"},
+    ],
+    search:r=>[r.id,r.nombre,r.dni,r.tipo_carnet],
+    card:c=>item(c._est, c.id, txt(c.nombre)||"Sin nombre", txt(c.tipo_carnet)||"—",
+      [["DNI",txt(c.dni)||"—"],["Emisión",fmtDate(c.fecha_emision)],
+       ["Vence",fmtDate(c._venc)+diasTxt(c._est)],["Entidad",txt(c.entidad_emisora)||"—"]])
+  }
+};
+
+function item(est,id,name,sub,pairs){
+  return '<div class="item '+est.k+'"><div class="top"><span class="id">'+esc(id)+'</span><span class="badge '+est.k+'">'+est.l+'</span></div>'+
+    '<div class="name">'+esc(name)+'</div><div class="sub">'+esc(sub)+'</div>'+
+    '<dl>'+pairs.map(p=>'<dt>'+p[0]+'</dt><dd>'+esc(p[1])+'</dd>').join("")+'</dl></div>';
+}
+
+/* ---------- interfaz ---------- */
+function renderTabs(){
+  const t=document.getElementById("tabs");
+  t.innerHTML=Object.keys(TABS).map(k=>'<button class="tab'+(k===tab?" on":"")+'" data-t="'+k+'">'+TABS[k].label+'</button>').join("");
+  t.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{ tab=b.dataset.t; renderTabs(); renderFilters(); render(); });
+}
+
+function renderFilters(){
+  const T=TABS[tab], st=S[tab];
+  const q=document.getElementById("q"); q.placeholder=T.ph; q.value=st.texto||"";
+  let h=T.filters.map(f=>{
+    const opts=['<option value="">'+f.todos+'</option>'].concat(f.opts().map(o=>'<option value="'+esc(o.v)+'"'+(st[f.k]===o.v?" selected":"")+'>'+esc(o.l)+'</option>')).join("");
+    return '<div class="f'+(f.wide?" wide":"")+'"><label>'+f.l+'</label><select data-f="'+f.k+'">'+opts+'</select></div>';
+  }).join("");
+  h+='<div class="f"><label>Estado</label><select data-f="estado">'+
+    [["","Todos"],["ok","Vigente"],["warn","Por vencer / sin dato"],["danger","Vencido"]].map(o=>'<option value="'+o[0]+'"'+((st.estado||"")===o[0]?" selected":"")+'>'+o[1]+'</option>').join("")+'</select></div>';
+  h+='<div class="f"><label>Vence en</label><select data-f="vence">'+
+    [["","Cualquier fecha"],["30","Hasta 30 días (incl. vencidos)"],["60","Hasta 60 días (incl. vencidos)"],["90","Hasta 90 días (incl. vencidos)"],["180","Hasta 180 días (incl. vencidos)"]]
+    .map(o=>'<option value="'+o[0]+'"'+((st.vence||"")===o[0]?" selected":"")+'>'+o[1]+'</option>').join("")+'</select></div>';
+  if(T.extra) h+='<div class="f chk"><label><input type="checkbox" data-f="'+T.extra.k+'"'+(st[T.extra.k]?" checked":"")+'> '+T.extra.l+'</label></div>';
+  h+='<div class="f"><label>&nbsp;</label><button class="btn" id="clear" style="width:100%">Limpiar filtros</button></div>';
+  const box=document.getElementById("filters"); box.innerHTML=h;
+
+  box.querySelectorAll("[data-f]").forEach(el=>el.onchange=()=>{
+    const k=el.dataset.f; st[k]= el.type==="checkbox" ? el.checked : el.value;
+    if(k==="ubic"){ try{ localStorage.setItem("isl_izaje_obra",st.ubic||""); }catch(_){}
+      if(S.elementos!==st) S.elementos.ubic=st.ubic; if(S.certificaciones!==st) S.certificaciones.ubic=st.ubic; }
+    render();
+  });
+  document.getElementById("clear").onclick=()=>{
+    S[tab]={}; if(tab!=="choferes"){ try{localStorage.setItem("isl_izaje_obra","");}catch(_){} S.elementos.ubic=S.certificaciones.ubic=""; }
+    renderFilters(); render();
+  };
+}
+
+function render(){
+  const T=TABS[tab], st=S[tab];
+  const sel=document.querySelector('#filters [data-f="estado"]'); if(sel) sel.value=st.estado||"";
+  const lim = st.vence ? Number(st.vence) : null;
+
+  // base: todos los filtros menos "estado" (para que los cuadros muestren el desglose)
+  const base = T.rows().filter(r=>{
+    for(const f of T.filters){ if(st[f.k] && txt(f.get(r))!==st[f.k]) return false; }
+    if(T.extra && st[T.extra.k] && !T.extra.test(r)) return false;
+    if(lim!==null && r._venc!=="S/D" && r._est.diff!==undefined && r._est.diff>lim) return false;
+    return true;
+  });
+  const cnt={ok:0,warn:0,danger:0}; base.forEach(r=>cnt[r._est.k]++);
+  const chips=[["","Todos",base.length,""],["ok","Vigentes",cnt.ok,"ok"],["warn","Por vencer",cnt.warn,"warn"],["danger","Vencidos",cnt.danger,"danger"]];
+  document.getElementById("summary").innerHTML=chips.map(c=>
+    '<button class="chip '+c[3]+((st.estado||"")===c[0]?" on":"")+'" data-e="'+c[0]+'"><b>'+c[2]+'</b><span>'+c[1]+'</span></button>').join("");
+  document.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{ st.estado=b.dataset.e; render(); });
+
+  const q=(st.texto||"").trim().toLowerCase();
+  const rows=base.filter(r=>(!st.estado||r._est.k===st.estado) && (!q || T.search(r).map(txt).join(" ").toLowerCase().includes(q)));
+  rows.sort((a,b)=>a._est.rank-b._est.rank || String(a._venc==="S/D"?"0":a._venc||"9").localeCompare(String(b._venc==="S/D"?"0":b._venc||"9")));
+
+  document.getElementById("count").textContent=rows.length+" registro"+(rows.length===1?"":"s");
+  document.getElementById("list").innerHTML = rows.length ? rows.map(T.card).join("") : '<div class="msg">No hay registros para este filtro.</div>';
+}
+
+document.getElementById("q").oninput=e=>{ S[tab].texto=e.target.value; render(); };
+document.getElementById("refresh").onclick=cargar;
+cargar();
+</script>
+</body>
+</html>
